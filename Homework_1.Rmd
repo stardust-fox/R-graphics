@@ -1,0 +1,221 @@
+---
+title: "Домашнее задание 1"
+author: "Кульгаева А."
+date: "2022-10-20"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Библиотеки 
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(skimr)
+```
+
+# Задание 1
+
+Загрузите датасет insurance_cost.csv
+
+```{r echo=T}
+ins_data <- read.csv('C:/Users/Lenovo/Desktop/Настя/Биостатистика/Визуализация биомед данных (Дмитрий Серебренников)/ДЗ 1/insurance_cost.csv', stringsAsFactors = T)
+
+```
+# Задание 2
+
+Выведите гистограммы всех нумерических переменных
+
+*Для этого сначала необходимо узнать структуру базы данных*
+```{r}
+str(ins_data)
+
+ggplot() +
+  geom_histogram(data = ins_data, 
+       aes(x = bmi))
+
+ggplot() +
+  geom_histogram(data = ins_data, 
+       aes(x = charges))
+```
+
+# Задание 3
+
+Нарисуйте график плотности по колонке charges. Отметьте вертикальные линии  средней и медианы на графике. Раскрасьте текст и линии средней и медианы разными цветами. Добавьте текстовые пояснения значения средней и медианы. Подберите тему для графика. Назовите оси.
+
+```{r}
+charges_mean <- round(mean(ins_data$charges),2)
+charges_median <- round(median(ins_data$charges),2)
+
+dens_plot <- ggplot() +
+  geom_density(data = ins_data, 
+       aes(x = charges)) +
+  geom_vline(aes(xintercept = charges_mean), color='green')+ 
+  geom_vline(aes(xintercept = charges_median), color='red') +
+  annotate("text", 
+           x=charges_mean+8000, 
+           y=0.00009,
+           label=paste0("Mean = ", charges_mean),color='green') +
+   annotate("text", 
+           x=charges_median-3300, 
+           y=0.00008,
+           label=paste0("Mediana = ", charges_median),color='red') +
+  labs(y = 'Плотность распределения', x = 'Страховые расходы', title = " \n График плотности") +
+  theme_pubclean()
+
+dens_plot
+```
+
+# Задание 4
+
+Сделайте три box_plot по отношению переменных charges и (1) sex (2) smoker (3)  region. Подберите тему для графика. Назовите оси.
+
+### Разница в страховых рассходах между группами по полу, курению, району проживания
+```{r}
+box1 <- ggplot() +
+  geom_boxplot(data = ins_data, 
+       aes(x = charges, y = sex), fill="red", alpha = 0.5,) + labs(title = "Пол") + theme_light()
+
+box2 <- ggplot() +
+  geom_boxplot(data = ins_data, 
+       aes(x = charges, y = smoker), fill="yellow", alpha = 0.5) + labs(title = "Курящие") + theme_light()
+
+box3 <- ggplot() +
+  geom_boxplot(data = ins_data, 
+       aes(x = charges, y = region), fill="green", alpha = 0.5) + labs(title = "Район") + theme_light()
+
+
+combine_plot <- ggarrange(box1, box2, box3,
+                          ncol = 3, nrow = 1)
+combine_plot
+```
+# Задание 5
+
+Объедините графики из заданий 3 и 4 в один так, чтобы сверху шёл один график из задания 3, а под ним 3 графика из задания 4. Сделайте общее название для графика.(title = "Распределение страховых расходов. Сравнение групп.")
+
+```{r}
+summ_plot <- ggarrange(dens_plot, combine_plot,
+                          ncol = 1, nrow = 2, labels = "Распределение страховых расходов")
+summ_plot 
+```
+# Задание 6
+
+Сделайте фасет графика из задания 3 по колонке region
+```{r}
+  ggplot() + 
+  geom_density(data = ins_data, 
+    aes(x = charges, fill= region),
+    alpha = 0.3)+
+  geom_vline(aes(xintercept = charges_mean), color='green')+ 
+  geom_vline(aes(xintercept = charges_median), color='red') +
+  annotate("text", 
+           x=charges_mean+8500, 
+           y=0.00009,
+           label=paste0("Total mean = ", charges_mean),color='green') +
+   annotate("text", 
+           x=charges_median-2000, 
+           y=0.00008,
+           label=paste0("Total mediana = ", charges_mean),color='red') +
+  labs(y = 'Плотность распределения', x = 'Страховые расходы', title = "Плотность страховых расходов по регионам") +
+  theme_pubclean()
+
+```
+
+# Задание 7
+
+Постройте scatter plot отношения переменных age и charges. Добавьте названия  осей, название графика и тему. Сделайте так, чтобы числа по оси Х отображались  14 шрифтом.
+
+```{r}
+ ggplot() + 
+    geom_point(data = ins_data ,aes(x=age, y=charges)) + labs(x = "Возраст", y = "Страховые затраты")+
+  theme(axis.text.x = element_text(size = 14))
+```
+
+# Задание 8
+
+Проведите линию тренда для предыдущего графика. 
+
+```{r}
+  ggplot(data = ins_data ,aes(x=age, y=charges)) + 
+  geom_point() +
+  labs(x = "Возраст", y = "Страховые затраты") +
+  theme(axis.text.x = element_text(size = 14)) +
+  geom_smooth(method=lm,
+              color="red", fullrange = T,
+              fill="#FF6699",
+              se=TRUE)
+
+```
+# Задание 9
+
+Сделайте разбивку предыдущего графика по колонке smokers (у вас должно  получится две линии тренда для курящих и нет).
+
+```{r}
+  ggplot(data = ins_data ,aes(x=age, y=charges, group = smoker, fill = smoker, color = smoker)) +
+  theme(axis.text.x = element_text(size = 14)) +
+  geom_point() +
+  labs(x = "Возраст", y = "Страховые затраты") +
+  geom_smooth(method=lm,
+              alpha=0.3,
+              se=TRUE)
+```
+
+# Задание 10
+
+Сделайте график из заданий 7-9, но вместо переменной age используйте переменную bmi.
+
+```{r}
+ ggplot() + 
+    geom_point(data = ins_data ,aes(x=bmi, y=charges)) + labs(x = "ИМТ", y = "Страховые затраты")+
+  theme(axis.text.x = element_text(size = 14))
+
+ ggplot(data = ins_data ,aes(x=bmi, y=charges)) + 
+  geom_point() +
+  labs(x = "ИМТ", y = "Страховые затраты") +
+  theme(axis.text.x = element_text(size = 14)) +
+  geom_smooth(method=lm,
+              color="red", fullrange = T,
+              fill="#FF6699",
+              se=TRUE)
+ 
+   ggplot(data = ins_data ,aes(x=bmi, y=charges, group = smoker, fill = smoker, color = smoker)) +
+  theme(axis.text.x = element_text(size = 14)) +
+  geom_point() +
+  labs(x = "ИМТ", y = "Страховые затраты") +
+  geom_smooth(method=lm,
+              alpha=0.3,
+              se=TRUE)
+```
+
+# Задание 11
+
+Приблизительно повторить график
+
+```{r}
+ins_data <- ins_data %>% 
+  mutate(
+    age_group = case_when(
+      age < 35 ~ "21-34",
+      age >= 35 & age < 50 ~ "35-49",
+      age >= 50 ~ "50+"
+    ))
+
+ins_data %>% 
+  ggplot(aes(x=bmi, y=log(charges), group = age_group, fill = age_group, color = age_group)) +
+  geom_point(alpha=0.2, color = 'dark violet') +
+  labs(x = "bmi", y = "log(charges)") +
+  facet_grid(. ~ age_group) + 
+  geom_smooth(method=lm, 
+              alpha=0.3,
+              se=TRUE) +
+  labs(title = "Отношение индекса массы тела к логарифму трат по возрастным группам") +
+  theme_minimal() +
+  theme(legend.position = 'bottom')
+```
+
