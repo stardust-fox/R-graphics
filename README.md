@@ -1,3 +1,3 @@
 # R-graphics
 
-Woo it works!
+Wohoo it works!
